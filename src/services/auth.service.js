@@ -1,8 +1,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { env } = require("../config/env");
-const UserModel = require("../models/user.model");
-const userStore = require("./user.store");
+const { User, toPublic } = require("../models/user.model");
 
 const buildToken = (user) => {
   return jwt.sign(
@@ -39,14 +38,15 @@ const register = async ({ email, password, fullName }) => {
     throw error;
   }
 
-  if (userStore.getByEmail(normalizedEmail)) {
+  const existingUser = await User.findOne({ email: normalizedEmail });
+  if (existingUser) {
     const error = new Error("Email is already registered");
     error.statusCode = 409;
     throw error;
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
-  const user = userStore.create({
+  const user = await User.create({
     email: normalizedEmail,
     passwordHash,
     fullName: normalizedFullName
@@ -54,7 +54,7 @@ const register = async ({ email, password, fullName }) => {
 
   return {
     token: buildToken(user),
-    user: UserModel.toPublic(user)
+    user: toPublic(user)
   };
 };
 
@@ -67,7 +67,7 @@ const login = async ({ email, password }) => {
     throw error;
   }
 
-  const user = userStore.getByEmail(normalizedEmail);
+  const user = await User.findOne({ email: normalizedEmail });
 
   if (!user) {
     const error = new Error("Invalid credentials");
@@ -85,7 +85,7 @@ const login = async ({ email, password }) => {
 
   return {
     token: buildToken(user),
-    user: UserModel.toPublic(user)
+    user: toPublic(user)
   };
 };
 

@@ -5,6 +5,7 @@
 ```
 src/
   config/
+    database.js
     env.js
   controllers/
     auth.controller.js
@@ -25,7 +26,6 @@ src/
     auth.service.js
     health.service.js
     profile.service.js
-    user.store.js
   app.js
   server.js
 ```

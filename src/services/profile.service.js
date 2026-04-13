@@ -1,5 +1,4 @@
-const UserModel = require("../models/user.model");
-const userStore = require("./user.store");
+const { User, toPublic } = require("../models/user.model");
 
 const editableFields = [
   "fullName",
@@ -13,7 +12,7 @@ const editableFields = [
 ];
 
 const getProfile = async (userId) => {
-  const user = userStore.getById(userId);
+  const user = await User.findById(userId);
 
   if (!user) {
     const error = new Error("User not found");
@@ -21,7 +20,7 @@ const getProfile = async (userId) => {
     throw error;
   }
 
-  return UserModel.toPublic(user);
+  return toPublic(user);
 };
 
 const updateProfile = async (userId, input) => {
@@ -42,7 +41,10 @@ const updateProfile = async (userId, input) => {
     }
   }
 
-  const updatedUser = userStore.updateById(userId, updates);
+  const updatedUser = await User.findByIdAndUpdate(userId, updates, {
+    new: true,
+    runValidators: true
+  });
 
   if (!updatedUser) {
     const error = new Error("User not found");
@@ -50,7 +52,7 @@ const updateProfile = async (userId, input) => {
     throw error;
   }
 
-  return UserModel.toPublic(updatedUser);
+  return toPublic(updatedUser);
 };
 
 module.exports = {
